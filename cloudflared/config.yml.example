@@ -1,0 +1,22 @@
+# Cloudflare Tunnel configuration template
+# Copy this to ~/.cloudflared/config.yml and fill in your values.
+# See cloudflared/setup.md for the full walkthrough.
+#
+# NOTE: This file is a template — the real config goes in ~/.cloudflared/,
+# NOT in the project directory. Never commit credentials to git.
+
+# The tunnel ID from `cloudflared tunnel create lets-go`
+tunnel: YOUR_TUNNEL_ID_HERE
+
+# Path to the credentials JSON created by the tunnel create command.
+# Mac/Linux: /Users/YOUR_USERNAME/.cloudflared/YOUR_TUNNEL_ID.json
+# Windows:   C:\Users\YOUR_USERNAME\.cloudflared\YOUR_TUNNEL_ID.json
+credentials-file: /Users/YOUR_USERNAME/.cloudflared/YOUR_TUNNEL_ID.json
+
+ingress:
+  # Replace with your actual hostname (must be on a domain you control in Cloudflare)
+  - hostname: letsgofamily.yourdomain.com
+    service: http://localhost:3001
+
+  # Required catch-all rule — returns 404 for any other hostname
+  - service: http_status:404

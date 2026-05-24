@@ -9,7 +9,12 @@
     "dev": "concurrently -n SERVER,CLIENT -c bgCyan.white,bgMagenta.white \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "build": "npm run build --prefix client",
     "start": "node server/server.js",
-    "db:seed": "node server/seed.js"
+    "db:seed": "node server/seed.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop lets-go",
+    "pm2:restart": "pm2 restart lets-go",
+    "pm2:logs": "pm2 logs lets-go",
+    "pm2:status": "pm2 status"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

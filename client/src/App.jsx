@@ -7,8 +7,12 @@ import KanbanView from './components/KanbanView.jsx';
 import QuickAddModal from './components/QuickAddModal.jsx';
 import PickForMeModal from './components/PickForMeModal.jsx';
 import { fetchActivities, createActivity, updateActivity, deleteActivity } from './lib/api.js';
+import StatusPage from './components/StatusPage.jsx';
 
 export default function App() {
+  // Serve the status page at /status without needing a router library
+  if (window.location.pathname === '/status') return <StatusPage />;
+
   const [activities, setActivities] = useState([]);
   const [view, setView] = useState('dashboard');
   const [loading, setLoading] = useState(true);

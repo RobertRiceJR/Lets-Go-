@@ -245,3 +245,103 @@ If the GitHub Actions workflow goes red, fix the issue before pushing again — 
 - **Drag & drop**: On the Kanban board, drag any card from "Want to Do" to "Done" to mark it complete (confetti included 🎉).
 - **Pick for Me**: On the Dashboard, tap "Pick Something For Me!" and optionally filter by drive time or season to get a random suggestion.
 - **SQLite vs Postgres**: SQLite is intentional here. It's simple, fast, needs no external database service, and works perfectly for a single-family app. The persistent volume on Railway handles durability.
+
+---
+
+## Self-Hosted Setup (PM2 + Cloudflare Tunnel)
+
+Run the app on your own machine or a spare PC instead of (or alongside) Railway.
+
+### Architecture
+
+```
+[Wife's Phone]  ──→  [Cloudflare Tunnel]  ──→  [Spare PC: PM2 + Express]  ──→  [SQLite]
+[Your Laptop]   ──→  [Local Network]      ──→  [Spare PC: PM2 + Express]  ──→  [SQLite]
+```
+
+- **Cloudflare Tunnel** gives the app a public HTTPS URL with no port-forwarding or router config
+- **PM2** keeps Express running in the background and restarts it on crash or reboot
+- **SQLite** stores everything locally — no external database needed
+
+### Quick Start (this machine)
+
+**1. Install PM2 globally (one-time):**
+```bash
+npm install -g pm2
+```
+
+**2. Build and start:**
+```bash
+# Mac/Linux:
+chmod +x scripts/launch.sh && ./scripts/launch.sh
+
+# Windows:
+.\scripts\launch.bat
+```
+
+The script installs deps, builds the client, starts PM2, and saves the process list.
+
+**3. Verify:**
+- App: http://localhost:3001
+- Status page: http://localhost:3001/status
+- Health check: http://localhost:3001/api/health
+
+### PM2 Commands
+
+| Command | What it does |
+|---------|-------------|
+| `npm run pm2:start` | Start the app under PM2 |
+| `npm run pm2:stop` | Stop the app |
+| `npm run pm2:restart` | Restart after a code change |
+| `npm run pm2:logs` | Tail live logs |
+| `npm run pm2:status` | Show process table (CPU, memory, uptime) |
+| `pm2 monit` | Live CPU/memory dashboard in terminal |
+
+**Make PM2 survive reboots** (run once):
+```bash
+pm2 startup    # prints a command — copy and run it
+pm2 save       # saves the current process list
+```
+
+### Expose Publicly via Cloudflare Tunnel
+
+**Quickest option — no account or domain needed:**
+```bash
+# Install cloudflared first (see cloudflared/setup.md)
+cloudflared tunnel --url http://localhost:3001
+```
+Prints a public URL like `https://abc123.trycloudflare.com` — share it instantly. The URL changes each time you restart the tunnel.
+
+**For a permanent URL** with your own domain, follow the full guide in [cloudflared/setup.md](cloudflared/setup.md).
+
+### Updating the App
+
+```bash
+git pull
+npm run build
+npm run pm2:restart
+```
+
+### When to Use Which
+
+| Situation | Use |
+|-----------|-----|
+| Just testing locally | `npm run dev` |
+| Sharing with wife temporarily | Cloudflare quick tunnel |
+| Permanent family URL | Named Cloudflare tunnel + custom domain |
+| 24/7 on a spare PC | PM2 + Cloudflare tunnel service |
+| No machine to spare | Railway (cloud) |
+
+### Moving to a Spare PC
+
+See [SPARE_PC_SETUP.md](SPARE_PC_SETUP.md) for the full step-by-step guide including database transfer, startup config for both Windows and Mac, and the one-writer rule for SQLite.
+
+### Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| Port 3001 in use | `npm run pm2:stop` then check for leftover node processes |
+| App crashes on start | `npm run pm2:logs` — look for the error |
+| Blank screen in browser | Did you run `npm run build` before `pm2:start`? |
+| Tunnel URL not working | Make sure `npm run pm2:status` shows the app as **online** first |
+| DB is empty after restart | Check `DB_PATH` in `ecosystem.config.js` points to the right file |
