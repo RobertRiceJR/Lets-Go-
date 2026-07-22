@@ -1,9 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, RefreshCw } from 'lucide-react';
-import { CATEGORY_EMOJIS } from './ActivityCard.jsx';
-
-const DRIVE_TIMES = ['under 30 min', '30-60 min', '1-2 hours', '2+ hours'];
-const SEASONS = ['Spring', 'Summer', 'Fall', 'Winter'];
+import { CATEGORY_EMOJIS, DRIVE_TIMES, SEASONS } from '../lib/constants.js';
 
 export default function PickForMeModal({ activities, onClose }) {
   const [driveFilter, setDriveFilter] = useState('');

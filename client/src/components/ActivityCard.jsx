@@ -1,26 +1,7 @@
 import React, { useState } from 'react';
 import { Star, Trash2, Pencil, Check, RotateCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
-
-export const CATEGORY_EMOJIS = {
-  'Arts & Crafts': '🎨',
-  'Day Trips': '🚗',
-  'Lakes & Swimming': '🏊',
-  'Hikes & Nature': '🌿',
-  'Rainy Day': '☔',
-  'Food & Restaurants': '🍕',
-  Seasonal: '🍂',
-  'Local Gems': '💎',
-};
-
-const DRIVE_BADGE = {
-  'under 30 min': 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
-  '30-60 min': 'bg-amber-500/15 text-amber-400 border-amber-500/20',
-  '1-2 hours': 'bg-orange-500/15 text-orange-400 border-orange-500/20',
-  '2+ hours': 'bg-red-500/15 text-red-400 border-red-500/20',
-};
-
-const SEASON_ICON = { Spring: '🌸', Summer: '☀️', Fall: '🍂', Winter: '❄️' };
+import { CATEGORY_EMOJIS, DRIVE_BADGE, SEASON_ICONS } from '../lib/constants.js';
 
 export default function ActivityCard({ activity, onUpdate, onDelete, onEdit, isDragging }) {
   const [busy, setBusy] = useState(false);
@@ -101,7 +82,7 @@ export default function ActivityCard({ activity, onUpdate, onDelete, onEdit, isD
           </span>
           {activity.season && activity.season !== 'Any' && (
             <span className="text-[0.68rem] px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-300 border border-white/8">
-              {SEASON_ICON[activity.season]} {activity.season}
+              {SEASON_ICONS[activity.season]} {activity.season}
             </span>
           )}
         </div>

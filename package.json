@@ -9,7 +9,8 @@
     "dev": "concurrently -n SERVER,CLIENT -c bgCyan.white,bgMagenta.white \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "build": "npm run build --prefix client",
     "start": "node server/server.js",
-    "db:seed": "node server/seed.js"
+    "db:seed": "node server/seed.js",
+    "import:letsgo": "node server/import.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
-import ActivityCard, { CATEGORY_EMOJIS } from './ActivityCard.jsx';
-
-const CATEGORIES = Object.keys(CATEGORY_EMOJIS);
+import ActivityCard from './ActivityCard.jsx';
+import { CATEGORIES, CATEGORY_EMOJIS } from '../lib/constants.js';
 
 function getGreeting() {
   const h = new Date().getHours();

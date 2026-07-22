@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
-import { CATEGORY_EMOJIS } from './ActivityCard.jsx';
+import {
+  CATEGORIES,
+  CATEGORY_EMOJIS,
+  DRIVE_TIMES,
+  SEASON_OPTIONS,
+  SEASON_ICONS,
+  SEASON_ANY,
+} from '../lib/constants.js';
 
-const CATEGORIES = Object.keys(CATEGORY_EMOJIS);
-const DRIVE_TIMES = ['under 30 min', '30-60 min', '1-2 hours', '2+ hours'];
-const SEASONS = ['Any', 'Spring', 'Summer', 'Fall', 'Winter'];
-const SEASON_ICONS = { Any: '🌈', Spring: '🌸', Summer: '☀️', Fall: '🍂', Winter: '❄️' };
-
-const DEFAULT_FORM = { title: '', category: '', drive_time: '', season: 'Any', notes: '' };
+const DEFAULT_FORM = { title: '', category: '', drive_time: '', season: SEASON_ANY, notes: '' };
 
 export default function QuickAddModal({ editActivity, onClose, onCreate, onUpdate }) {
   const isEditing = !!editActivity;
@@ -21,7 +23,7 @@ export default function QuickAddModal({ editActivity, onClose, onCreate, onUpdat
         title: editActivity.title,
         category: editActivity.category,
         drive_time: editActivity.drive_time,
-        season: editActivity.season || 'Any',
+        season: editActivity.season || SEASON_ANY,
         notes: editActivity.notes || '',
       });
     }
@@ -137,7 +139,7 @@ export default function QuickAddModal({ editActivity, onClose, onCreate, onUpdat
               <div>
                 <Label>Season</Label>
                 <div className="space-y-1.5">
-                  {SEASONS.map((s) => (
+                  {SEASON_OPTIONS.map((s) => (
                     <button
                       key={s}
                       type="button"

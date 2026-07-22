@@ -1,13 +1,9 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { CATEGORIES, STATUSES, DRIVE_TIMES, SEASONS, SEASON_ANY } from '../lib/constants.js';
 
-const CATEGORIES = [
-  'Arts & Crafts', 'Day Trips', 'Lakes & Swimming', 'Hikes & Nature',
-  'Rainy Day', 'Food & Restaurants', 'Seasonal', 'Local Gems',
-];
-const STATUSES = ['want to do', 'done'];
-const DRIVE_TIMES = ['under 30 min', '30-60 min', '1-2 hours', '2+ hours'];
-const SEASONS = ['Spring', 'Summer', 'Fall', 'Winter', 'Any'];
+// Filter dropdown lists 'Any' as a season option (trailing), after the four seasons.
+const SEASON_FILTERS = [...SEASONS, SEASON_ANY];
 
 const EMPTY = { category: '', status: '', drive_time: '', season: '' };
 
@@ -28,7 +24,7 @@ export default function FilterBar({ filters, onChange }) {
         {DRIVE_TIMES.map((d) => <option key={d} value={d}>{d}</option>)}
       </FilterSelect>
       <FilterSelect value={filters.season} onChange={set('season')} placeholder="Any Season">
-        {SEASONS.map((s) => <option key={s} value={s}>{s}</option>)}
+        {SEASON_FILTERS.map((s) => <option key={s} value={s}>{s}</option>)}
       </FilterSelect>
 
       {hasFilters && (
