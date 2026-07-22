@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { requireToken } = require('./lib/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -21,6 +22,8 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/activities', require('./routes/activities'));
+app.use('/api/places', require('./routes/places'));
+app.use('/api/export', requireToken, require('./routes/export'));
 
 // Serve built React app in production
 if (isProd) {

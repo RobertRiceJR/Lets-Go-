@@ -141,6 +141,47 @@ CREATE TRIGGER IF NOT EXISTS trg_location_activity_updated
 AFTER UPDATE ON location_activity FOR EACH ROW BEGIN
   UPDATE location_activity SET updated_at = datetime('now') WHERE id = NEW.id;
 END;
+
+-- Compatibility view: reconstructs the OLD flat \`activities\` shape from the
+-- places tables so GET /api/activities can serve the current React client
+-- unchanged. Named v_activities_compat (not \`activities\`) so it coexists with
+-- the legacy table until the Phase-3 cutover. "Pick-one" fields use subqueries
+-- so a future multi-season/multi-origin place never row-multiplies the output.
+CREATE VIEW IF NOT EXISTS v_activities_compat AS
+SELECT
+  la.id AS id,
+  l.title AS title,
+  CASE ac.code
+    WHEN 'dining' THEN 'Food & Restaurants'
+    WHEN 'hiking' THEN 'Hikes & Nature'
+    WHEN 'swimming' THEN 'Lakes & Swimming'
+    WHEN 'arts-crafts' THEN 'Arts & Crafts'
+    WHEN 'day-trip' THEN 'Day Trips'
+    WHEN 'indoor' THEN 'Rainy Day'
+    WHEN 'seasonal' THEN 'Seasonal'
+    WHEN 'sightseeing' THEN 'Local Gems'
+    ELSE 'Day Trips'
+  END AS category,
+  CASE WHEN ls.code IN ('been','favorite') THEN 'done' ELSE 'want to do' END AS status,
+  (SELECT dt.drive_bucket FROM location_drive_time dt
+     WHERE dt.location_id = l.id AND dt.from_label = 'Home' LIMIT 1) AS drive_time,
+  CASE (SELECT se.code FROM location_season lsn JOIN lk_location_season se ON se.id = lsn.season_id
+          WHERE lsn.location_id = l.id ORDER BY lsn.id LIMIT 1)
+    WHEN 'spring' THEN 'Spring' WHEN 'summer' THEN 'Summer' WHEN 'fall' THEN 'Fall'
+    WHEN 'winter' THEN 'Winter' WHEN 'any' THEN 'Any' ELSE 'Any'
+  END AS season,
+  l.notes AS notes,
+  (SELECT h.visited_on FROM location_activity_history h
+     WHERE h.location_activity_id = la.id ORDER BY h.visited_on DESC, h.id DESC LIMIT 1) AS date_completed,
+  (SELECT r.rating FROM location_activity_history_rating r
+     JOIN location_activity_history h ON h.id = r.location_activity_history_id
+     WHERE h.location_activity_id = la.id
+     ORDER BY h.visited_on DESC, h.id DESC, r.id DESC LIMIT 1) AS rating,
+  la.created_at AS created_at
+FROM location_activity la
+JOIN location l ON l.id = la.location_id
+JOIN lk_activity_category ac ON ac.id = la.activity_category_id
+JOIN lk_location_status ls ON ls.id = l.status_id;
 `;
 
 // ---- lookup seeds (idempotent; codes + ids MUST match the hub) ------------

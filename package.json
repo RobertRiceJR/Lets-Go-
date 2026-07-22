@@ -10,6 +10,7 @@
     "build": "npm run build --prefix client",
     "start": "node server/server.js",
     "db:seed": "node server/seed.js",
+    "db:migrate": "node server/migrate.js",
     "import:letsgo": "node server/import.js"
   },
   "devDependencies": {
