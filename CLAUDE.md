@@ -8,10 +8,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-This repo is **three separate npm packages** (root, `client/`, `server/`), each with its own `package.json` and lockfile — it is **not** an npm workspace. A bare `npm install` at the root installs only `concurrently`. You must install all three layers:
+This repo is **three separate npm packages** (root, `client/`, `server/`), each with its own `package.json` and lockfile — it is **not** an npm workspace. A root `npm install` installs all three layers: the root `postinstall` script runs `npm install --prefix server` and `npm install --prefix client --include=dev`. This is what lets Railway build the app with no config file, so don't remove it.
 
 ```bash
-npm install && npm install --prefix server && npm install --prefix client
+npm install
 ```
 
 | Command | What it does |
@@ -50,8 +50,8 @@ CORS is `*` in dev but locks to `https://${RAILWAY_PUBLIC_DOMAIN}` in prod (bloc
 
 ## Deploy & CI
 
-- **GitHub Actions** (`.github/workflows/deploy.yml`) runs on push/PR to `main`: installs all three layers, builds the client, boots the server, and asserts `/api/health` returns `{"status":"ok"}`. It's a pre-flight gate, not the deployer.
-- **Railway** auto-deploys on push to `main` via GitHub integration, using `railway.toml` (build installs all layers + builds client; start is `npm start`; health check at `/api/health`). `Procfile` is a fallback.
+- **GitHub Actions** (`.github/workflows/deploy.yml`) runs on push/PR to `main`: one root `npm ci`, `npm run build`, `npm start` in production mode, then asserts `/api/health` returns `{"status":"ok"}` and that the built client is served. That is Railway's default path with no config file. It's a pre-flight gate, not the deployer: Railway deploys whether or not it passes, unless "Wait for CI" is on in the service settings.
+- **Railway** auto-deploys on push to `main` via GitHub integration. `railway.toml` is **deprecated by Railway and stops being read on 2026-12-01**. After that, the build is Railway's default (root install, `npm run build`, `npm start`), which works because of the root `postinstall`. The health check path (`/api/health`) and restart policy must then be set in the Railway dashboard. Don't delete `railway.toml` until the service's Config File path is cleared in Railway, or the build fails with "config file not found". `Procfile` is a fallback for the start command.
 - **Prod env vars:** `NODE_ENV=production`, `DB_PATH=/data/db.sqlite`, `RAILWAY_PUBLIC_DOMAIN=<domain-without-https>`. Railway auto-sets `PORT`. SQLite needs a **persistent volume mounted at `/data`** or the DB resets each deploy.
 
 ## Constraints

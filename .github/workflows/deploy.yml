@@ -1,7 +1,9 @@
 name: CI — Build & Health Check
 
 # Railway watches the GitHub repo and auto-deploys on push to main.
-# This workflow's job is to catch broken builds BEFORE Railway picks them up.
+# This workflow builds and starts the app the way Railway does with NO config file:
+# one install at the root, `npm run build`, `npm start`. Railway stops reading
+# railway.toml on 2026-12-01, so this default path is the one that has to work.
 
 on:
   push:
@@ -24,25 +26,32 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install root dependencies
-        run: npm install
-
-      - name: Install server dependencies
-        run: npm install --prefix server
-
-      - name: Install client dependencies
-        run: npm install --prefix client
+      # A single root install. The root postinstall script installs server/ and client/.
+      # NODE_ENV=production here proves the client's build tools still get installed.
+      - name: Install (root only, as Railway does)
+        env:
+          NODE_ENV: production
+        run: npm ci
 
       - name: Build client (Vite)
+        env:
+          NODE_ENV: production
         run: npm run build
 
-      - name: Start server and verify health endpoint
+      - name: Start in production mode and verify
+        env:
+          NODE_ENV: production
+          PORT: '3001'
         run: |
-          node server/server.js &
+          npm start &
           SERVER_PID=$!
-          # Give the server a few seconds to start and seed the DB
-          sleep 4
+          for i in $(seq 1 30); do
+            curl --fail --silent http://localhost:3001/api/health > /dev/null && break
+            sleep 1
+          done
           # Health check must return {"status":"ok",...}
           curl --fail --silent http://localhost:3001/api/health | grep -q '"status":"ok"'
-          echo "✅ Health check passed"
+          # The built client must be served from the same port.
+          curl --fail --silent http://localhost:3001/ | grep -qi '<div id="root"'
+          echo "✅ Health check and client passed"
           kill $SERVER_PID

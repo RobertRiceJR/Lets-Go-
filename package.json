@@ -6,6 +6,7 @@
     "node": ">=18"
   },
   "scripts": {
+    "postinstall": "npm install --prefix server && npm install --prefix client --include=dev",
     "dev": "concurrently -n SERVER,CLIENT -c bgCyan.white,bgMagenta.white \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "build": "npm run build --prefix client",
     "start": "node server/server.js",
