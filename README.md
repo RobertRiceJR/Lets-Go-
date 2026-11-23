@@ -56,10 +56,8 @@ A beautifully designed family activity tracker and bucket list. Add adventures, 
 git clone https://github.com/YOUR_USERNAME/lets-go.git
 cd lets-go
 
-# 2. Install all dependencies
+# 2. Install all dependencies (the root postinstall installs server/ and client/ too)
 npm install
-npm install --prefix server
-npm install --prefix client
 
 # 3. Start both servers (client :5173, server :3001)
 npm run dev
@@ -229,13 +227,30 @@ GitHub Actions runs (.github/workflows/deploy.yml)
   → if any step fails, the workflow turns red (deploy blocked)
        ↓
 Railway detects the push (GitHub integration)
-  → runs the build command from railway.toml
+  → installs at the root (the postinstall script installs server/ and client/)
+  → runs npm run build
   → starts the server with npm start
   → hits /api/health to confirm successful boot
   → swaps traffic to the new deployment
 ```
 
-If the GitHub Actions workflow goes red, fix the issue before pushing again — Railway won't get a broken build.
+The two run side by side. Railway deploys whether or not the GitHub Actions workflow passes, unless **Wait for CI** is switched on in the Railway service settings.
+
+### `railway.toml` is going away
+
+Railway has deprecated `railway.toml`. Existing files **stop being read on 2026-12-01**. This repo is ready for that:
+
+- The root `postinstall` script installs all three layers, so Railway's default build works with no config file.
+- The GitHub Actions workflow builds and starts the app that same way.
+
+Two settings from `railway.toml` have no default and must be set in the Railway dashboard (service → Settings):
+
+| Setting | Value |
+|---------|-------|
+| Healthcheck Path | `/api/health` |
+| Restart Policy | On Failure, 3 retries |
+
+Do not delete `railway.toml` until the service's **Config File** path is cleared in Railway. While that path is set, a missing file fails the build.
 
 ---
 
